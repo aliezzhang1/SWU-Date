@@ -1,0 +1,30 @@
+{
+  "name": "swu-date",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "seed:test-users": "node scripts/seed-test-users.mjs",
+    "deploy:pages": "npx wrangler@latest pages deploy dist --project-name swu-date --branch main"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.1",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^4.1.3"
+  }
+}

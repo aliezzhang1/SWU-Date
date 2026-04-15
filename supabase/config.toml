@@ -1,0 +1,4 @@
+project_id = "rquvxuiqebsiupyygaex"
+
+[functions.daily-match-batch]
+verify_jwt = false
