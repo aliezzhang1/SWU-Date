@@ -25,19 +25,24 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
+        id: install
+        continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
           npm ci --registry=https://registry.npmjs.org/ 2>&1 | tee npm-ci.log
-          status=${PIPESTATUS[0]}
-          if [ $status -ne 0 ]; then
-            tail -n 60 npm-ci.log > npm-ci-tail.log || true
-            summary=$(tr '\n' ' ' < npm-ci-tail.log | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
-            echo "::error title=npm ci failed::$summary"
-            exit $status
-          fi
+
+      - name: Surface npm ci error
+        if: steps.install.outcome == 'failure'
+        shell: bash
+        run: |
+          tail -n 60 npm-ci.log > npm-ci-tail.log || true
+          summary=$(tr '\n' ' ' < npm-ci-tail.log | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
+          echo "::error title=npm ci failed::$summary"
+          exit 1
 
       - name: Build app
+        if: steps.install.outcome == 'success'
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -45,6 +50,7 @@ jobs:
           VITE_STUDENT_EMAIL_DOMAIN: ${{ secrets.VITE_STUDENT_EMAIL_DOMAIN }}
 
       - name: Deploy to Cloudflare Pages
+        if: steps.install.outcome == 'success'
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
