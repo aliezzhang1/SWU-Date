@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BottomNav } from '../components/layout/BottomNav';
 import { Avatar } from '../components/ui/Avatar';
@@ -28,17 +28,17 @@ export function MessagesPage() {
         <header className="topbar topbar--compact">
           <div>
             <span className="eyebrow">匹配与联系方式</span>
-            <h1>每日配对里已经来到你面前的人</h1>
+            <h1>每周配对里已经来到你面前的人</h1>
             <p className="section-caption">
-              {pendingApprovalCount > 0 ? `有 ${pendingApprovalCount} 段匹配正在等你决定是否展示联系方式。` : '每天 21:00 只会发放 1 位最契合的人，双方都点头后才会互相看到联系方式。'}
+              {pendingApprovalCount > 0 ? `有 ${pendingApprovalCount} 段匹配正在等你决定是否展示联系方式。` : '每周五 21:00 只会发放 1 位最契合的人，双方都点头后才会互相看到联系方式。'}
             </p>
           </div>
         </header>
 
         {matches.length === 0 ? (
           <article className="empty-state">
-            <h2>还没有每日配对结果</h2>
-            <p>先去首页看看本轮状态，系统会在每天 21:00 揭晓 1 位最契合的人。</p>
+            <h2>还没有每周配对结果</h2>
+            <p>先去首页看看本轮状态，系统会在每周五 21:00 揭晓 1 位最契合的人。</p>
             <Link className="button button--primary" to="/home">
               去首页
             </Link>

@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   DailyMatchResultRecord,
   DailyMatchSnapshot,
   MatchPreferenceRecord,
@@ -12,6 +12,7 @@ import { supportsBinaryMatching } from '../utils/matching';
 
 const MATCH_REVEAL_HOUR = 21;
 const MATCH_REVEAL_MINUTE = 0;
+const MATCH_REVEAL_WEEKDAY = 5;
 const DEFAULT_MATCH_PREFERENCES: MatchPreferences = {
   maxGradeDiff: 1,
   reminderEnabled: true,
@@ -31,29 +32,34 @@ function fromLocalDateKey(dateKey: string, hour = MATCH_REVEAL_HOUR, minute = MA
   return new Date(year, (month ?? 1) - 1, day ?? 1, hour, minute, 0, 0);
 }
 
-function getTodayRevealAt(now = new Date()): Date {
+function getThisWeekRevealAt(now = new Date()): Date {
   const revealAt = new Date(now);
+  const dayDiff = MATCH_REVEAL_WEEKDAY - revealAt.getDay();
+  revealAt.setDate(revealAt.getDate() + dayDiff);
   revealAt.setHours(MATCH_REVEAL_HOUR, MATCH_REVEAL_MINUTE, 0, 0);
   return revealAt;
 }
 
 function getLastRevealAt(now = new Date()): Date {
-  const todayRevealAt = getTodayRevealAt(now);
-  if (now >= todayRevealAt) {
-    return todayRevealAt;
+  const thisWeekRevealAt = getThisWeekRevealAt(now);
+  if (now >= thisWeekRevealAt) {
+    return thisWeekRevealAt;
   }
 
-  const yesterdayRevealAt = new Date(todayRevealAt);
-  yesterdayRevealAt.setDate(yesterdayRevealAt.getDate() - 1);
-  return yesterdayRevealAt;
+  const previousRevealAt = new Date(thisWeekRevealAt);
+  previousRevealAt.setDate(previousRevealAt.getDate() - 7);
+  return previousRevealAt;
 }
 
 function getNextMatchAt(now = new Date()): Date {
-  const next = getTodayRevealAt(now);
-  if (now >= next) {
-    next.setDate(next.getDate() + 1);
+  const thisWeekRevealAt = getThisWeekRevealAt(now);
+  if (now < thisWeekRevealAt) {
+    return thisWeekRevealAt;
   }
-  return next;
+
+  const nextRevealAt = new Date(thisWeekRevealAt);
+  nextRevealAt.setDate(nextRevealAt.getDate() + 7);
+  return nextRevealAt;
 }
 
 function mapMatchPreferences(record?: MatchPreferenceRecord | null): MatchPreferences {
@@ -88,7 +94,7 @@ function buildWaitingSnapshot(roundDate: string, nextMatchAt: Date, preferences:
     preferences,
     match: null,
     title: '距离下一次揭晓',
-    description: '系统会在每天 21:00 统一发放 1 位当前最契合的人。',
+    description: '系统会在每周五 21:00 统一发放 1 位当前最契合的人。',
   };
 }
 
@@ -99,8 +105,8 @@ function buildIncompleteSnapshot(roundDate: string, nextMatchAt: Date, preferenc
     nextMatchAt: nextMatchAt.toISOString(),
     preferences,
     match: null,
-    title: '补完问卷，今晚才会有结果',
-    description: '完整回答后，系统才会把你放进每日 21:00 的配对池。',
+    title: '补完问卷，本周五才会有结果',
+    description: '完整回答后，系统才会把你放进每周五 21:00 的配对池。',
   };
 }
 
@@ -112,7 +118,7 @@ function buildRestrictedSnapshot(roundDate: string, nextMatchAt: Date, preferenc
     preferences,
     match: null,
     title: '当前版本先按男女互配',
-    description: '这一版会先把每日配对限制在男女互配，后续再扩展更多匹配方案。',
+    description: '这一版会先把每周配对限制在男女互配，后续再扩展更多匹配方案。',
   };
 }
 
@@ -123,8 +129,8 @@ function buildProcessingSnapshot(roundDate: string, nextMatchAt: Date, preferenc
     nextMatchAt: nextMatchAt.toISOString(),
     preferences,
     match: null,
-    title: '今晚的结果正在送达',
-    description: '21:00 的统一配对已经开始，结果通常会在几十秒内同步到首页。',
+    title: '本周结果正在送达',
+    description: '周五 21:00 的统一配对已经开始，结果通常会在几十秒内同步到首页。',
   };
 }
 
@@ -138,8 +144,8 @@ async function buildSnapshotFromResult(userId: string, result: DailyMatchResultR
       nextMatchAt: nextMatchAt.toISOString(),
       preferences,
       match,
-      title: match ? '这位，值得你认真看一眼' : '今晚的配对已经生成',
-      description: match ? '今天只发这一位，先看公开资料，再决定要不要继续。' : '这轮配对已经生成，但资料暂时还没同步完整。',
+      title: match ? '这位，值得你认真看一眼' : '本周的配对已经生成',
+      description: match ? '本周只发这一位，先看公开资料，再决定要不要继续。' : '这轮配对已经生成，但资料暂时还没同步完整。',
     };
   }
 
@@ -149,8 +155,8 @@ async function buildSnapshotFromResult(userId: string, result: DailyMatchResultR
     nextMatchAt: nextMatchAt.toISOString(),
     preferences,
     match: null,
-    title: '今晚先把机会留给更合适的人',
-    description: '如果今晚没有同时满足条件和契合度的人，我们宁可空一轮，也不随便发放。',
+    title: '这周先把机会留给更合适的人',
+    description: '如果这周没有同时满足条件和契合度的人，我们宁可空一轮，也不随便发放。',
   };
 }
 
@@ -275,7 +281,7 @@ export async function getDailyMatchSnapshot(userId: string): Promise<DailyMatchS
 
   const now = new Date();
   const nextMatchAt = getNextMatchAt(now);
-  const todayRevealAt = getTodayRevealAt(now);
+  const thisWeekRevealAt = getThisWeekRevealAt(now);
   const lastRevealAt = getLastRevealAt(now);
   const activeRoundDate = toLocalDateKey(lastRevealAt);
   const nextRoundDate = toLocalDateKey(nextMatchAt);
@@ -294,7 +300,7 @@ export async function getDailyMatchSnapshot(userId: string): Promise<DailyMatchS
         preferences,
         match: latestMatch,
         title: '这位，值得你认真看一眼',
-        description: '本地预览模式会用你最新的一条匹配展示信封和契合报告，正式发放仍按每日 21:00。',
+        description: '本地预览模式会用你最新的一条匹配展示信封和契合报告，正式发放仍按每周五 21:00。',
       };
     }
   }
@@ -316,7 +322,7 @@ export async function getDailyMatchSnapshot(userId: string): Promise<DailyMatchS
     return buildSnapshotFromResult(userId, result, preferences);
   }
 
-  if (now >= todayRevealAt) {
+  if (now >= thisWeekRevealAt) {
     return buildProcessingSnapshot(activeRoundDate, nextMatchAt, preferences);
   }
 

@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { getDailyMatchSnapshot, getMatches } from '../services/matching';
 import type { DailyMatchSnapshot, MatchWithProfile } from '../types/domain';
 import { useAuthStore } from './authStore';
@@ -26,7 +26,7 @@ export const useMatchStore = create<MatchState>((set) => ({
       set({ dailySnapshot, isLoadingDaily: false });
     } catch (error) {
       console.error(error);
-      pushToast('error', '每日配对加载失败', error instanceof Error ? error.message : '请稍后再试。');
+      pushToast('error', '每周配对加载失败', error instanceof Error ? error.message : '请稍后再试。');
       set({ isLoadingDaily: false });
     }
   },

@@ -1,4 +1,4 @@
-﻿import { Bell, CalendarDays, Clock3, Settings2, Sparkles } from 'lucide-react';
+import { Bell, CalendarDays, Clock3, Settings2, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BottomNav } from '../components/layout/BottomNav';
@@ -54,7 +54,7 @@ function getRoundStatusLabel(phase: DailyMatchPhase) {
     case 'gender_restricted':
       return '规则限制';
     default:
-      return '等待今晚';
+      return '等待本周五';
   }
 }
 
@@ -62,38 +62,38 @@ function getHeroCopy(snapshot: DailyMatchSnapshot) {
   switch (snapshot.phase) {
     case 'matched':
       return {
-        eyebrow: '今晚结果已送达',
+        eyebrow: '本周结果已送达',
         title: '这位，值得你认真看一眼',
         description: '我们只把同时通过条件和契合度筛选的人留在这里，让你把注意力放在真正值得认识的一个人身上。',
       };
     case 'unmatched':
       return {
-        eyebrow: '今晚结果已揭晓',
-        title: '今晚先把机会留给更合适的人',
+        eyebrow: '本周结果已揭晓',
+        title: '这周先把机会留给更合适的人',
         description: '如果暂时没有同时满足条件和契合度的人，我们宁可空一轮，也不为了有结果而随便塞一个人给你。',
       };
     case 'processing':
       return {
-        eyebrow: '21:00 结果生成中',
-        title: '今晚的结果正在统一送达',
+        eyebrow: '周五 21:00 结果生成中',
+        title: '本周结果正在统一送达',
         description: '这一轮会一次性为大家结算结果，通常几十秒内就会同步到你的首页。',
       };
     case 'complete_profile':
       return {
-        eyebrow: '先拿到今晚的入场资格',
-        title: '补完问卷，今晚才会有结果',
+        eyebrow: '先拿到本周的入场资格',
+        title: '补完问卷，本周五才会有结果',
         description: '完整答案能帮我们判断边界、节奏和偏好，避免把不够合适的人推给你。',
       };
     case 'gender_restricted':
       return {
         eyebrow: '当前版本说明',
         title: '这一版先按男女互配发放结果',
-        description: '我们先把每日一配的主链路做稳，后续会继续扩展更多匹配方案和身份选择。',
+        description: '我们先把每周一配的主链路做稳，后续会继续扩展更多匹配方案和身份选择。',
       };
     default:
       return {
         eyebrow: '下一次揭晓',
-        title: '每天晚上21:00揭晓一位最契合的人',
+        title: '每周五晚上21:00揭晓一位最契合的人',
         description: '把节奏慢下来，你会更容易看清谁是真的和你对频，而不是被很多人同时分散注意力。',
       };
   }
@@ -103,17 +103,17 @@ function getStatePills(snapshot: DailyMatchSnapshot) {
   const range = formatGradeRange(snapshot.preferences.maxGradeDiff);
   switch (snapshot.phase) {
     case 'matched':
-      return ['今晚只发这一位', `当前按 ${range} 筛选`, '先看公开资料，再决定要不要继续'];
+      return ['本周只发这一位', `当前按 ${range} 筛选`, '先看公开资料，再决定要不要继续'];
     case 'processing':
       return ['全站正在统一结算', '通常几十秒内同步', '稍后刷新即可'];
     case 'unmatched':
-      return ['今晚没有硬凑一个结果', `当前按 ${range} 筛选`, '明晚 21:00 再揭晓'];
+      return ['这周没有硬凑一个结果', `当前按 ${range} 筛选`, '下周五 21:00 再揭晓'];
     case 'complete_profile':
-      return ['补完核心问卷才能进池', '答案完整度会影响稳定性', '今晚前完成可参与下一轮'];
+      return ['补完核心问卷才能进池', '答案完整度会影响稳定性', '周五前完成可参与下一轮'];
     case 'gender_restricted':
       return ['当前版本先支持男女互配', `当前按 ${range} 筛选`, '后续会扩展更多匹配方案'];
     default:
-      return [`当前按 ${range} 筛选`, '21:00 统一揭晓'];
+      return [`当前按 ${range} 筛选`, '周五 21:00 统一揭晓'];
   }
 }
 
@@ -226,7 +226,7 @@ export function HomePage() {
       <main className="app-page app-page--home">
         <section className="page-shell page-shell--home">
           <article className="empty-state">
-            <h2>{isLoadingDaily ? '正在整理配对结果...' : '每日配对加载中'}</h2>
+            <h2>{isLoadingDaily ? '正在整理配对结果...' : '每周配对加载中'}</h2>
             <p>我们正在同步你的问卷、偏好和本轮状态。</p>
           </article>
         </section>
@@ -255,7 +255,7 @@ export function HomePage() {
               <h2 className="daily-match-hero__title">
                 {dailySnapshot.phase === 'waiting' ? (
                   <>
-                    {'\u6bcf\u5929\u665a\u4e0a21:00'}
+                    {'每周五晚上21:00'}
                     <br />
                     {'\u63ed\u6653\u4e00\u4f4d\u6700\u5951\u5408\u7684\u4eba'}
                   </>
@@ -271,7 +271,7 @@ export function HomePage() {
             </Link>
           </div>
 
-          <div className="daily-match-countdown" aria-label="每日配对倒计时">
+          <div className="daily-match-countdown" aria-label="每周配对倒计时">
             {countdown.map((value, index) => (
               <div key={`${index}-${value}`} className="daily-match-countdown__item">
                 <strong>{value}</strong>
@@ -325,7 +325,7 @@ export function HomePage() {
           <article className={`match-letter-stage${isMatchLetterOpened ? ' is-open' : ''}`}>
             {!isMatchLetterOpened ? (
               <button type="button" className="match-envelope-card" onClick={handleOpenMatchLetter}>
-                <span className="match-envelope-card__eyebrow">今晚匹配信</span>
+                <span className="match-envelope-card__eyebrow">本周匹配信</span>
                 <div className="match-envelope" aria-hidden="true">
                   <span className="match-envelope__paper" />
                   <span className="match-envelope__body" />
@@ -339,7 +339,7 @@ export function HomePage() {
                 <span className="match-envelope-card__meta">{dailySnapshot.match.score}% 契合</span>
               </button>
             ) : (
-              <section className="match-letter" aria-label="今晚的匹配报告">
+              <section className="match-letter" aria-label="本周的匹配报告">
                 <div className="match-letter__topline">
                   <span>SWU DATE LETTER</span>
                   <span>{formatRevealTime(dailySnapshot.nextMatchAt)}</span>
@@ -396,7 +396,7 @@ export function HomePage() {
                 </Link>
               ) : dailySnapshot.phase === 'processing' ? (
                 <button type="button" className="button button--primary button--block" onClick={() => void fetchDailySnapshot()}>
-                  {'刷新今晚结果'}
+                  {'刷新本周结果'}
                 </button>
               ) : (
                 <Link className="button button--primary button--block" to="/me/settings">

@@ -1,4 +1,4 @@
-﻿import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { canUsersMatchByGender, rankCandidates, supportsBinaryMatching } from '../../../src/utils/matching.ts';
 
 const REQUIRED_QUESTION_IDS = [
@@ -131,6 +131,7 @@ interface PlannedPair {
 const DEFAULT_MAX_GRADE_DIFF = 1;
 const REVEAL_UTC_HOUR = 13;
 const REVEAL_UTC_MINUTE = 0;
+const REVEAL_WEEKDAY = 5;
 const PAGE_SIZE = 1000;
 const GRADE_ORDER = ['大一', '大二', '大三', '大四', '研一', '研二', '研三', '博士'] as const;
 const CORS_HEADERS = {
@@ -159,13 +160,49 @@ function jsonResponse(status: number, body: Record<string, unknown>): Response {
   });
 }
 
-function getTodayInChina(now = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', {
+function getChinaWallClock(now = new Date()): Date {
+  const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Shanghai',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).format(now);
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(now);
+
+  const getPart = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((part) => part.type === type)?.value ?? '0');
+
+  return new Date(Date.UTC(
+    getPart('year'),
+    getPart('month') - 1,
+    getPart('day'),
+    getPart('hour'),
+    getPart('minute'),
+    getPart('second'),
+  ));
+}
+
+function toUtcDateKey(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = `${date.getUTCMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getUTCDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getCurrentRoundDateInChina(now = new Date()): string {
+  const chinaNow = getChinaWallClock(now);
+  const revealAt = new Date(chinaNow);
+  const dayDiff = REVEAL_WEEKDAY - chinaNow.getUTCDay();
+  revealAt.setUTCDate(revealAt.getUTCDate() + dayDiff);
+  revealAt.setUTCHours(21, 0, 0, 0);
+
+  if (chinaNow < revealAt) {
+    revealAt.setUTCDate(revealAt.getUTCDate() - 7);
+  }
+
+  return toUtcDateKey(revealAt);
 }
 
 function isValidRoundDate(value: string): boolean {
@@ -599,7 +636,7 @@ Deno.serve(async (request) => {
 
   const roundDate = payload.roundDate && isValidRoundDate(payload.roundDate)
     ? payload.roundDate
-    : getTodayInChina();
+    : getCurrentRoundDateInChina();
   const source = payload.source ?? 'cron';
   const revealAt = getRevealAtUtc(roundDate);
 

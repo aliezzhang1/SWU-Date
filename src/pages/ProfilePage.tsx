@@ -1,4 +1,4 @@
-﻿import { ChevronDown, Flag } from 'lucide-react';
+import { ChevronDown, Flag } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ReportModal } from '../components/feedback/ReportModal';
@@ -125,8 +125,8 @@ export function ProfilePage() {
 
         <section className="info-card info-card--subtle stack-sm">
           <span className="eyebrow">配对机制</span>
-          <h2>现在改成每日 21:00 自动配对</h2>
-          <p>这一版不再支持手动“喜欢 / 划过”。系统会在每天晚上 21:00 只发放 1 位最契合的人，资料页主要用于查看你已经得到的配对对象。</p>
+          <h2>现在改成每周五 21:00 自动配对</h2>
+          <p>这一版不再支持手动“喜欢 / 划过”。系统会在每周五晚上 21:00 只发放 1 位最契合的人，资料页主要用于查看你已经得到的配对对象。</p>
         </section>
 
         <div className="page-actions">

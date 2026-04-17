@@ -1,4 +1,4 @@
-﻿import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { changeCurrentPassword, deleteCurrentAccount, loginWithStudentAccount } from '../services/auth';
@@ -64,7 +64,7 @@ export function SettingsPage() {
       })
       .catch((error) => {
         console.error(error);
-        pushToast('error', '匹配设置加载失败', '先用默认值也能正常参与每日配对。');
+        pushToast('error', '匹配设置加载失败', '先用默认值也能正常参与每周配对。');
       });
   }, [user]);
 
@@ -82,7 +82,7 @@ export function SettingsPage() {
     try {
       const preferences = toPreferences(gradeRange, reminderEnabled, reminderTime);
       await updateMatchPreferences(currentUser.id, preferences);
-      pushToast('success', '每日配对设置已保存', '新的年级范围和提醒时间会用于下一轮 21:00 配对。');
+      pushToast('success', '每周配对设置已保存', '新的年级范围和提醒时间会用于下一轮周五 21:00 配对。');
     } catch (error) {
       console.error(error);
       pushToast('error', '保存失败', error instanceof Error ? error.message : '请稍后重试。');
@@ -100,7 +100,7 @@ export function SettingsPage() {
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
     if (permission === 'granted') {
-      pushToast('success', '浏览器通知已开启', '在你打开网页时，我们会按设置时间提醒今晚 21:00 的配对。');
+      pushToast('success', '浏览器通知已开启', '在你打开网页时，我们会按设置时间提醒本周五 21:00 的配对。');
       return;
     }
 
@@ -166,8 +166,8 @@ export function SettingsPage() {
 
         <section className="info-card stack-md">
           <div className="stack-xs">
-            <h2>每日配对偏好</h2>
-            <p>系统会在每天 21:00 发放 1 位当前最契合的人。默认只匹配前后 1 个年级，你可以在这里改范围。</p>
+            <h2>每周配对偏好</h2>
+            <p>系统会在每周五 21:00 发放 1 位当前最契合的人。默认只匹配前后 1 个年级，你可以在这里改范围。</p>
           </div>
 
           <label className="field">
@@ -181,8 +181,8 @@ export function SettingsPage() {
 
           <label className="toggle-field">
             <div>
-              <strong>开启每日提醒</strong>
-              <p>提醒只影响站内倒计时和浏览器提醒，不会改变 21:00 的配对时间。</p>
+              <strong>开启每周提醒</strong>
+              <p>提醒只影响站内倒计时和浏览器提醒，不会改变周五 21:00 的配对时间。</p>
             </div>
             <button
               type="button"
@@ -205,14 +205,14 @@ export function SettingsPage() {
 
           <div className="info-card info-card--subtle stack-sm">
             <strong>{notificationLabel}</strong>
-            <p>如果你允许浏览器通知，打开网页时会按设置时间提醒你今晚的配对即将揭晓。</p>
+            <p>如果你允许浏览器通知，打开网页时会按设置时间提醒你本周五的配对即将揭晓。</p>
             <button type="button" className="button button--ghost" onClick={() => void handleNotificationPermission()}>
               请求浏览器通知权限
             </button>
           </div>
 
           <button type="button" className="button button--primary" disabled={isPreferenceSaving} onClick={() => void handlePreferenceSave()}>
-            {isPreferenceSaving ? '保存中...' : '保存每日配对设置'}
+            {isPreferenceSaving ? '保存中...' : '保存每周配对设置'}
           </button>
         </section>
 
